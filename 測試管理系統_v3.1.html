@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試案例管理系統 v3.1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --accent: #06b6d4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .project-info {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .info-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .info-field input {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        
+        .info-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .test-cases-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .test-cases-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Noto Sans TC', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-success:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .test-cases-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-case-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .test-case-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .test-case-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .test-case-form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .upload-area {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .upload-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .file-list {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .file-item {
+            background: var(--bg);
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item-remove {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        
+        .generate-section {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .notification.success {
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .required {
+            color: var(--danger);
+        }
+        
+        .info-banner {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .info-banner strong {
+            color: var(--primary);
+        }
+        
+        /* 檔案上傳區域改進 */
+        .upload-area.has-files {
+            border-color: var(--secondary);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .upload-status {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        /* 底部新增按鈕區域 */
+        .add-case-bottom {
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-large {
+            font-size: 1.2rem;
+            padding: 1rem 2.5rem;
+        }
+        
+        /* 刪除按鈕區域 */
+        .delete-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed var(--border);
+            text-align: center;
+        }
+        
+        .btn-block {
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 測試案例管理系統 v3.1</h1>
+            <p>輕鬆管理測試案例，一鍵生成專業測試報告 Excel</p>
+            <div class="toolbar">
+                <button class="btn btn-secondary" onclick="saveData()">💾 儲存資料</button>
+                <button class="btn btn-secondary" onclick="loadData()">📂 載入資料</button>
+                <button class="btn btn-warning" onclick="exportJSON()">📤 匯出 JSON</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('importJSON').click()">📥 匯入 JSON</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑 清除所有資料</button>
+                <input type="file" id="importJSON" accept=".json" style="display:none" onchange="importJSON(event)">
+            </div>
+        </div>
+        
+        <div class="info-banner">
+            <strong>💡 使用提示：</strong><br>
+            • 檔案上傳功能需要後端服務運行 (python backend_api.py)<br>
+            • 測試資料會自動儲存到瀏覽器，下次開啟會自動載入<br>
+            • 可使用「匯出/匯入 JSON」功能備份或轉移資料<br>
+            • 生成的 Excel 檔名格式：專案名稱_日期時間.xlsx
+        </div>
+        
+        <div class="project-info">
+            <div class="info-field">
+                <label>專案名稱 <span class="required">*</span></label>
+                <input type="text" id="projectName" value="系統功能測試" placeholder="輸入專案名稱">
+            </div>
+            <div class="info-field">
+                <label>測試負責人 <span class="required">*</span></label>
+                <input type="text" id="testLeader" value="張三" placeholder="輸入負責人姓名">
+            </div>
+            <div class="info-field">
+                <label>測試日期 <span class="required">*</span></label>
+                <input type="date" id="testDate">
+            </div>
+            <div class="info-field">
+                <label>測試環境 <span class="required">*</span></label>
+                <input type="text" id="testEnv" value="測試環境 v1.0" placeholder="輸入環境資訊">
+            </div>
+        </div>
+        
+        <div class="test-cases-header">
+            <h2>測試案例清單</h2>
+        </div>
+        
+        <div id="testCasesList" class="test-cases-list"></div>
+        
+        <div class="add-case-bottom">
+            <button class="btn btn-primary btn-large" onclick="addTestCase()">
+                ➕ 新增測試案例
+            </button>
+        </div>
+        
+        <div class="generate-section">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCases">0</div>
+                    <div class="stat-label">總測試案例</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="passedCases">0</div>
+                    <div class="stat-label">通過案例</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="failedCases">0</div>
+                    <div class="stat-label">失敗案例</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="passRate">0%</div>
+                    <div class="stat-label">通過率</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-success" id="generateBtn" onclick="generateReport()">
+                📊 生成測試報告 Excel
+            </button>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>正在生成測試報告...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        const STORAGE_KEY = 'testCases_data';
+        
+        let testCases = [];
+        let caseCounter = 1;
+        
+        // 頁面載入時自動載入資料
+        window.addEventListener('load', function() {
+            // 設定今天的日期
+            document.getElementById('testDate').valueAsDate = new Date();
+            
+            // 嘗試從 localStorage 載入資料
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    
+                    // 載入專案資訊
+                    if (data.projectInfo) {
+                        document.getElementById('projectName').value = data.projectInfo.projectName || '';
+                        document.getElementById('testLeader').value = data.projectInfo.testLeader || '';
+                        document.getElementById('testDate').value = data.projectInfo.testDate || '';
+                        document.getElementById('testEnv').value = data.projectInfo.testEnv || '';
+                    }
+                    
+                    // 載入測試案例
+                    if (data.testCases && data.testCases.length > 0) {
+                        testCases = data.testCases.map(tc => ({
+                            ...tc,
+                            expectedResult: tc.expectedResult || '',
+                            screenshots: tc.screenshots || [],
+                            dataFiles: tc.dataFiles || []
+                        }));
+                        console.log('載入的測試案例:', testCases);
+                        console.log('第一個案例的預期結果:', testCases[0].expectedResult);
+                        caseCounter = Math.max(...testCases.map(tc => parseInt(tc.id.split('-')[1]))) + 1;
+                        renderTestCases();
+                        updateStats();
+                        showNotification('已自動載入上次儲存的資料', 'success');
+                    } else {
+                        addTestCase(); // 沒有資料時新增一個空白案例
+                    }
+                } catch (e) {
+                    console.error('載入資料失敗:', e);
+                    addTestCase();
+                }
+            } else {
+                addTestCase(); // 初次使用,新增一個空白案例
+            }
+        });
+        
+        // 自動儲存功能 - 當資料變更時自動儲存
+        function autoSave() {
+            const data = {
+                projectInfo: {
+                    projectName: document.getElementById('projectName').value,
+                    testLeader: document.getElementById('testLeader').value,
+                    testDate: document.getElementById('testDate').value,
+                    testEnv: document.getElementById('testEnv').value
+                },
+                testCases: testCases.map(tc => ({
+                    id: tc.id,
+                    requirement: tc.requirement,
+                    case: tc.case,
+                    precondition: tc.precondition,
+                    steps: tc.steps,
+                    testData: tc.testData,
+                    expectedResult: tc.expectedResult,
+                    priority: tc.priority,
+                    result: tc.result,
+                    tester: tc.tester
+                    // 注意：檔案物件無法序列化，所以不儲存
+                }))
+            };
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+        
+        function saveData() {
+            autoSave();
+            showNotification('資料已儲存到瀏覽器！', 'success');
+        }
+        
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                location.reload(); // 重新載入頁面以載入資料
+            } else {
+                showNotification('沒有找到儲存的資料', 'warning');
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('⚠️ 確定要清除所有資料嗎？\n\n這將會：\n• 刪除所有測試案例\n• 清除瀏覽器儲存的資料\n• 此操作無法復原！\n\n建議先匯出 JSON 備份。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                testCases = [];
+                caseCounter = 1;
+                renderTestCases();
+                updateStats();
+                showNotification('✅ 所有資料已清除！頁面將重新載入...', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+        
+        function exportJSON() {
+            const data = {
+                projectInfo: {
+                    projectName: document.getElementById('projectName').value,
+                    testLeader: document.getElementById('testLeader').value,
+                    testDate: document.getElementById('testDate').value,
+                    testEnv: document.getElementById('testEnv').value
+                },
+                testCases: testCases.map(tc => ({
+                    id: tc.id,
+                    requirement: tc.requirement,
+                    case: tc.case,
+                    precondition: tc.precondition,
+                    steps: tc.steps,
+                    testData: tc.testData,
+                    expectedResult: tc.expectedResult,
+                    priority: tc.priority,
+                    result: tc.result,
+                    tester: tc.tester
+                })),
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `測試案例_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('JSON 檔案已匯出！', 'success');
+        }
+        
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // 載入專案資訊
+                    if (data.projectInfo) {
+                        document.getElementById('projectName').value = data.projectInfo.projectName || '';
+                        document.getElementById('testLeader').value = data.projectInfo.testLeader || '';
+                        document.getElementById('testDate').value = data.projectInfo.testDate || '';
+                        document.getElementById('testEnv').value = data.projectInfo.testEnv || '';
+                    }
+                    
+                    // 載入測試案例
+                    if (data.testCases) {
+                        testCases = data.testCases.map(tc => ({
+                            ...tc,
+                            expectedResult: tc.expectedResult || '',
+                            screenshots: [],
+                            dataFiles: []
+                        }));
+                        caseCounter = Math.max(...testCases.map(tc => parseInt(tc.id.split('-')[1]))) + 1;
+                        renderTestCases();
+                        updateStats();
+                        autoSave();
+                        showNotification('JSON 檔案已成功匯入！', 'success');
+                    }
+                } catch (err) {
+                    showNotification('匯入失敗：JSON 格式錯誤', 'error');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            
+            // 清空 input 以允許重複選擇同一個檔案
+            event.target.value = '';
+        }
+        
+        function addTestCase() {
+            const id = `TC-${String(caseCounter).padStart(3, '0')}`;
+            const testCase = {
+                id: id,
+                requirement: '',
+                case: '',
+                precondition: '',
+                steps: '',
+                testData: '',
+                expectedResult: '',
+                priority: '中',
+                result: '待測試',
+                tester: '',
+                screenshots: [],
+                dataFiles: []
+            };
+            
+            testCases.push(testCase);
+            caseCounter++;
+            renderTestCases();
+            updateStats();
+            autoSave();
+        }
+        
+        function removeTestCase(id) {
+            if (confirm('確定要刪除此測試案例嗎?')) {
+                testCases = testCases.filter(tc => tc.id !== id);
+                renderTestCases();
+                updateStats();
+                autoSave();
+                showNotification('測試案例已刪除', 'success');
+            }
+        }
+        
+        function renderTestCases() {
+            const container = document.getElementById('testCasesList');
+            
+            if (testCases.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>尚未新增測試案例</h3>
+                        <p>點擊上方「新增測試案例」按鈕開始</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = testCases.map(tc => `
+                <div class="test-case-card">
+                    <div class="test-case-header">
+                        <span class="test-case-id">${tc.id}</span>
+                    </div>
+                    
+                    <div class="test-case-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>測試需求 <span class="required">*</span></label>
+                                <input type="text" value="${tc.requirement}" 
+                                    onchange="updateTestCase('${tc.id}', 'requirement', this.value)"
+                                    placeholder="例: 使用者登入功能">
+                            </div>
+                            <div class="form-group">
+                                <label>測試人員 <span class="required">*</span></label>
+                                <input type="text" value="${tc.tester}" 
+                                    onchange="updateTestCase('${tc.id}', 'tester', this.value)"
+                                    placeholder="例: 張三">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>測試個案 <span class="required">*</span></label>
+                            <input type="text" value="${tc.case}" 
+                                onchange="updateTestCase('${tc.id}', 'case', this.value)"
+                                placeholder="例: 驗證正確的帳號密碼可以成功登入系統">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>前置條件</label>
+                            <textarea onchange="updateTestCase('${tc.id}', 'precondition', this.value)"
+                                placeholder="例: 1. 系統已啟動&#10;2. 測試帳號已建立&#10;3. 資料庫連線正常">${tc.precondition}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>測試步驟 <span class="required">*</span></label>
+                            <textarea onchange="updateTestCase('${tc.id}', 'steps', this.value)"
+                                placeholder="例: 1. 開啟登入頁面&#10;2. 輸入正確帳號&#10;3. 輸入正確密碼&#10;4. 點擊登入按鈕">${tc.steps}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>測試資料 (文字)</label>
+                            <textarea onchange="updateTestCase('${tc.id}', 'testData', this.value)"
+                                placeholder="例: 帳號: testuser01&#10;密碼: Test@1234">${tc.testData}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>測試資料 (檔案上傳)</label>
+                            <div class="upload-area ${(tc.dataFiles && tc.dataFiles.length > 0) ? 'has-files' : ''}" onclick="document.getElementById('datafiles-${tc.id}').click()">
+                                <input type="file" id="datafiles-${tc.id}" multiple 
+                                    onchange="handleFileUpload('${tc.id}', 'dataFiles', this.files)">
+                                <div class="upload-icon">📎</div>
+                                <div class="upload-text">點擊上傳測試資料檔案到伺服器</div>
+                                ${(tc.dataFiles && tc.dataFiles.length > 0) ? `<div class="upload-status">✓ 已上傳 ${tc.dataFiles.filter(f => f.uploaded !== false).length} 個檔案</div>` : ''}
+                                <div class="file-list" id="datafiles-list-${tc.id}">
+                                    ${(tc.dataFiles || []).map((file, idx) => `
+                                        <div class="file-item">
+                                            <span>${file.uploaded === false ? '❌' : '✅'} ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+                                            <button class="file-item-remove" onclick="removeFile(event, '${tc.id}', 'dataFiles', ${idx})">✕</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>預期結果 <span class="required">*</span></label>
+                            <textarea onchange="updateTestCase('${tc.id}', 'expectedResult', this.value)"
+                                placeholder="例: 系統顯示「登入成功」訊息&#10;使用者導向主頁面&#10;主頁面顯示使用者名稱">${tc.expectedResult !== undefined && tc.expectedResult !== null ? tc.expectedResult : ''}</textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>優先級 <span class="required">*</span></label>
+                                <select onchange="updateTestCase('${tc.id}', 'priority', this.value)">
+                                    <option value="高" ${tc.priority === '高' ? 'selected' : ''}>高</option>
+                                    <option value="中" ${tc.priority === '中' ? 'selected' : ''}>中</option>
+                                    <option value="低" ${tc.priority === '低' ? 'selected' : ''}>低</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>執行結果 <span class="required">*</span></label>
+                                <select onchange="updateTestCase('${tc.id}', 'result', this.value); updateStats()">
+                                    <option value="通過" ${tc.result === '通過' ? 'selected' : ''}>✅ 通過</option>
+                                    <option value="失敗" ${tc.result === '失敗' ? 'selected' : ''}>❌ 失敗</option>
+                                    <option value="待測試" ${tc.result === '待測試' ? 'selected' : ''}>⏳ 待測試</option>
+                                    <option value="跳過" ${tc.result === '跳過' ? 'selected' : ''}>⏭ 跳過</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="upload-section">
+                            <div class="upload-area ${(tc.screenshots && tc.screenshots.length > 0) ? 'has-files' : ''}" onclick="document.getElementById('screenshots-${tc.id}').click()">
+                                <input type="file" id="screenshots-${tc.id}" multiple accept="image/*" 
+                                    onchange="handleFileUpload('${tc.id}', 'screenshots', this.files)">
+                                <div class="upload-icon">📸</div>
+                                <div class="upload-text">點擊上傳執行截圖到伺服器</div>
+                                ${(tc.screenshots && tc.screenshots.length > 0) ? `<div class="upload-status">✓ 已上傳 ${tc.screenshots.filter(f => f.uploaded !== false).length} 個檔案</div>` : ''}
+                                <div class="file-list" id="screenshots-list-${tc.id}">
+                                    ${(tc.screenshots || []).map((file, idx) => `
+                                        <div class="file-item">
+                                            <span>${file.uploaded === false ? '❌' : '✅'} ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+                                            <button class="file-item-remove" onclick="removeFile(event, '${tc.id}', 'screenshots', ${idx})">✕</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="delete-section">
+                            <button class="btn btn-danger btn-block" onclick="removeTestCase('${tc.id}')">
+                                🗑 刪除此測試案例
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateTestCase(id, field, value) {
+            const testCase = testCases.find(tc => tc.id === id);
+            if (testCase) {
+                testCase[field] = value;
+                autoSave();
+            }
+        }
+        
+        function handleFileUpload(id, type, files) {
+            const testCase = testCases.find(tc => tc.id === id);
+            if (!testCase || files.length === 0) return;
+            
+            const fileType = type === 'screenshots' ? '執行截圖' : '測試資料檔案';
+            showNotification(`正在上傳 ${files.length} 個${fileType}...`, 'warning');
+            
+            // 上傳每個檔案
+            let uploadedCount = 0;
+            let failedCount = 0;
+            const uploadedFiles = [];
+            
+            Array.from(files).forEach(async (file, index) => {
+                try {
+                    // 創建 FormData
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('testCaseId', id);
+                    formData.append('fileType', type);
+                    
+                    // 上傳到後端
+                    const response = await fetch(`${API_URL}/api/upload-file`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        uploadedFiles.push({
+                            name: file.name,
+                            size: file.size,
+                            path: result.path,
+                            uploaded: true
+                        });
+                        uploadedCount++;
+                    } else {
+                        failedCount++;
+                        uploadedFiles.push({
+                            name: file.name,
+                            size: file.size,
+                            uploaded: false
+                        });
+                    }
+                } catch (error) {
+                    console.error('上傳失敗:', error);
+                    failedCount++;
+                    uploadedFiles.push({
+                        name: file.name,
+                        size: file.size,
+                        uploaded: false
+                    });
+                }
+                
+                // 所有檔案上傳完成
+                if (uploadedCount + failedCount === files.length) {
+                    testCase[type] = [...testCase[type], ...uploadedFiles];
+                    renderTestCases();
+                    autoSave();
+                    
+                    if (failedCount === 0) {
+                        const fileNames = uploadedFiles.map(f => f.name).join('、');
+                        showNotification(
+                            `✅ 成功上傳 ${uploadedCount} 個${fileType}\n\n檔案名稱：\n${fileNames}\n\n※ 檔案已儲存到伺服器`,
+                            'success'
+                        );
+                    } else {
+                        showNotification(
+                            `⚠️ 上傳完成\n成功: ${uploadedCount} 個\n失敗: ${failedCount} 個\n\n請檢查後端服務是否運行`,
+                            'warning'
+                        );
+                    }
+                }
+            });
+        }
+        
+        function removeFile(event, id, type, index) {
+            event.stopPropagation();
+            const testCase = testCases.find(tc => tc.id === id);
+            if (testCase) {
+                testCase[type].splice(index, 1);
+                renderTestCases();
+            }
+        }
+        
+        function updateStats() {
+            const total = testCases.length;
+            const passed = testCases.filter(tc => tc.result === '通過').length;
+            const failed = testCases.filter(tc => tc.result === '失敗').length;
+            const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+            
+            document.getElementById('totalCases').textContent = total;
+            document.getElementById('passedCases').textContent = passed;
+            document.getElementById('failedCases').textContent = failed;
+            document.getElementById('passRate').textContent = passRate + '%';
+            
+            autoSave();
+        }
+        
+        async function generateReport() {
+            // 驗證必填欄位
+            const projectName = document.getElementById('projectName').value;
+            const testLeader = document.getElementById('testLeader').value;
+            const testDate = document.getElementById('testDate').value;
+            const testEnv = document.getElementById('testEnv').value;
+            
+            if (!projectName || !testLeader || !testDate || !testEnv) {
+                showNotification('請填寫完整的專案資訊！', 'error');
+                return;
+            }
+            
+            const emptyFields = testCases.filter(tc => 
+                !tc.requirement || !tc.case || !tc.steps || !tc.expectedResult || !tc.tester
+            );
+            
+            if (emptyFields.length > 0) {
+                showNotification(
+                    `請填寫完整資訊！以下測試案例有必填欄位未填寫:\n${emptyFields.map(tc => tc.id).join(', ')}`,
+                    'error'
+                );
+                return;
+            }
+            
+            // 準備資料
+            const data = {
+                projectInfo: {
+                    projectName: projectName,
+                    testLeader: testLeader,
+                    testDate: testDate,
+                    testEnv: testEnv
+                },
+                testCases: testCases.map(tc => ({
+                    id: tc.id,
+                    requirement: tc.requirement,
+                    case: tc.case,
+                    precondition: tc.precondition,
+                    steps: tc.steps,
+                    testData: tc.testData,
+                    expectedResult: tc.expectedResult,
+                    priority: tc.priority,
+                    result: tc.result,
+                    tester: tc.tester,
+                    screenshots: tc.screenshots.filter(f => f.uploaded !== false).map(f => ({
+                        name: f.name,
+                        path: f.path
+                    })),
+                    dataFiles: tc.dataFiles.filter(f => f.uploaded !== false).map(f => ({
+                        name: f.name,
+                        path: f.path
+                    }))
+                }))
+            };
+            
+            // 顯示載入狀態
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('generateBtn').disabled = true;
+            
+            try {
+                // 呼叫後端API
+                const response = await fetch(`${API_URL}/api/generate-report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('生成報告失敗');
+                }
+                
+                // 下載Excel檔案
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // 使用專案名稱和日期時間作為檔名
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0,10).replace(/-/g, '');
+                const timeStr = now.toTimeString().slice(0,8).replace(/:/g, '');
+                a.download = `${projectName}_${dateStr}_${timeStr}.xlsx`;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showNotification('測試報告已成功生成並下載！\n檔名: ' + a.download, 'success');
+                
+            } catch (error) {
+                console.error('生成報告錯誤:', error);
+                showNotification(
+                    '❌ 生成報告失敗！\n\n可能原因：\n1. 後端服務未運行\n   → 請執行: python backend_api.py\n2. API 地址錯誤\n3. 網路連線問題\n\n請檢查瀏覽器 Console 查看詳細錯誤',
+                    'error'
+                );
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.whiteSpace = 'pre-line'; // 支援換行
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
