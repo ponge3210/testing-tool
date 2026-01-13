@@ -39,7 +39,7 @@ def create_excel_report(data):
     ws.title = "測試報告"
     
     # 設定欄寬
-    ws.column_dimensions['A'].width = 8
+    ws.column_dimensions['A'].width = 12
     ws.column_dimensions['B'].width = 22
     ws.column_dimensions['C'].width = 30
     ws.column_dimensions['D'].width = 25
