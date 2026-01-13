@@ -45,10 +45,11 @@ def create_excel_report(data):
     ws.column_dimensions['D'].width = 25
     ws.column_dimensions['E'].width = 25
     ws.column_dimensions['F'].width = 20
-    ws.column_dimensions['G'].width = 10
-    ws.column_dimensions['H'].width = 12
+    ws.column_dimensions['G'].width = 25
+    ws.column_dimensions['H'].width = 10
     ws.column_dimensions['I'].width = 12
-    ws.column_dimensions['J'].width = 20
+    ws.column_dimensions['J'].width = 12
+    ws.column_dimensions['K'].width = 20
     
     # 樣式定義
     title_font = Font(name='微軟正黑體', size=16, bold=True, color='FFFFFF')
@@ -67,7 +68,7 @@ def create_excel_report(data):
     )
     
     # 報告標題
-    ws.merge_cells('A1:J1')
+    ws.merge_cells('A1:K1')
     ws['A1'] = '測試執行報告'
     ws['A1'].font = title_font
     ws['A1'].fill = title_fill
@@ -95,7 +96,7 @@ def create_excel_report(data):
     # 測試案例表頭
     current_row = 7
     headers = ['編號', '測試需求', '測試個案', '前置條件', '測試步驟', 
-               '測試資料', '優先級', '執行結果', '測試人員', '執行截圖']
+               '測試資料', '預期結果', '優先級', '執行結果', '測試人員', '執行截圖']
     
     for col, header in enumerate(headers, start=1):
         cell = ws.cell(row=current_row, column=col)
@@ -146,36 +147,39 @@ def create_excel_report(data):
         else:
             ws[f'F{row}'] = ''
         
-        ws[f'G{row}'] = test['priority']
-        ws[f'H{row}'] = test['result']
-        ws[f'I{row}'] = test['tester']
+        # 預期結果
+        ws[f'G{row}'] = test.get('expectedResult', '')
+        
+        ws[f'H{row}'] = test['priority']
+        ws[f'I{row}'] = test['result']
+        ws[f'J{row}'] = test['tester']
         
         # 處理截圖
         screenshots = test.get('screenshots', [])
         if screenshots:
             screenshots_text = ', '.join([f'截圖{i+1}' for i in range(len(screenshots))])
-            ws[f'J{row}'] = screenshots_text
+            ws[f'K{row}'] = screenshots_text
             
-            cell = ws[f'J{row}']
+            cell = ws[f'K{row}']
             sheet_name = f"{test['id']}_截圖"
             cell.hyperlink = f"#'{sheet_name}'!A1"
             cell.font = Font(name='微軟正黑體', size=10, color='0563C1', underline='single')
         else:
-            ws[f'J{row}'] = '無截圖'
+            ws[f'K{row}'] = '無截圖'
         
         # 加入下拉選單
-        priority_dv.add(f'G{row}')
-        result_dv.add(f'H{row}')
+        priority_dv.add(f'H{row}')
+        result_dv.add(f'I{row}')
         
         # 套用格式
-        for col in range(1, 11):
+        for col in range(1, 12):
             cell = ws.cell(row=row, column=col)
             cell.alignment = data_alignment
             cell.border = thin_border
             cell.font = Font(name='微軟正黑體', size=10)
             
             # 執行結果顏色標記
-            if col == 8:
+            if col == 9:
                 if test['result'] == '通過':
                     cell.fill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type='solid')
                     cell.font = Font(name='微軟正黑體', size=10, color='006100', bold=True)
@@ -187,7 +191,7 @@ def create_excel_report(data):
                     cell.font = Font(name='微軟正黑體', size=10, color='9C6500', bold=True)
             
             # 優先級顏色標記
-            if col == 7:
+            if col == 8:
                 if test['priority'] == '高':
                     cell.font = Font(name='微軟正黑體', size=10, color='C00000', bold=True)
                 elif test['priority'] == '中':
@@ -197,7 +201,7 @@ def create_excel_report(data):
     
     # 測試統計
     current_row += 2
-    ws.merge_cells(f'A{current_row}:J{current_row}')
+    ws.merge_cells(f'A{current_row}:K{current_row}')
     ws[f'A{current_row}'] = '測試統計摘要'
     ws[f'A{current_row}'].font = Font(name='微軟正黑體', size=12, bold=True, color='FFFFFF')
     ws[f'A{current_row}'].fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')

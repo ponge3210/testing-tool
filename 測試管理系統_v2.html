@@ -651,9 +651,12 @@
                     if (data.testCases && data.testCases.length > 0) {
                         testCases = data.testCases.map(tc => ({
                             ...tc,
+                            expectedResult: tc.expectedResult || '',
                             screenshots: tc.screenshots || [],
                             dataFiles: tc.dataFiles || []
                         }));
+                        console.log('載入的測試案例:', testCases);
+                        console.log('第一個案例的預期結果:', testCases[0].expectedResult);
                         caseCounter = Math.max(...testCases.map(tc => parseInt(tc.id.split('-')[1]))) + 1;
                         renderTestCases();
                         updateStats();
@@ -686,6 +689,7 @@
                     precondition: tc.precondition,
                     steps: tc.steps,
                     testData: tc.testData,
+                    expectedResult: tc.expectedResult,
                     priority: tc.priority,
                     result: tc.result,
                     tester: tc.tester
@@ -739,6 +743,7 @@
                     precondition: tc.precondition,
                     steps: tc.steps,
                     testData: tc.testData,
+                    expectedResult: tc.expectedResult,
                     priority: tc.priority,
                     result: tc.result,
                     tester: tc.tester
@@ -778,6 +783,7 @@
                     if (data.testCases) {
                         testCases = data.testCases.map(tc => ({
                             ...tc,
+                            expectedResult: tc.expectedResult || '',
                             screenshots: [],
                             dataFiles: []
                         }));
@@ -807,6 +813,7 @@
                 precondition: '',
                 steps: '',
                 testData: '',
+                expectedResult: '',
                 priority: '中',
                 result: '待測試',
                 tester: '',
@@ -909,6 +916,12 @@
                                     `).join('')}
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>預期結果 <span class="required">*</span></label>
+                            <textarea onchange="updateTestCase('${tc.id}', 'expectedResult', this.value)"
+                                placeholder="例: 系統顯示「登入成功」訊息&#10;使用者導向主頁面&#10;主頁面顯示使用者名稱">${tc.expectedResult !== undefined && tc.expectedResult !== null ? tc.expectedResult : ''}</textarea>
                         </div>
                         
                         <div class="form-row">
@@ -1078,7 +1091,7 @@
             }
             
             const emptyFields = testCases.filter(tc => 
-                !tc.requirement || !tc.case || !tc.steps || !tc.tester
+                !tc.requirement || !tc.case || !tc.steps || !tc.expectedResult || !tc.tester
             );
             
             if (emptyFields.length > 0) {
@@ -1104,6 +1117,7 @@
                     precondition: tc.precondition,
                     steps: tc.steps,
                     testData: tc.testData,
+                    expectedResult: tc.expectedResult,
                     priority: tc.priority,
                     result: tc.result,
                     tester: tc.tester,
